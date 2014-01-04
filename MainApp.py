@@ -75,6 +75,10 @@ class LayerList:
         self.fig.clf()
         a = self.fig.add_subplot(111)
         n, bins, patches = a.hist(l['energy'], 50, normed=1, alpha=0.75)
+        a.set_xlabel('Energy, Mev')
+        a.set_ylabel('Events')
+        a.set_title('Layer : ' + str(l['layer']) + '[' + l['atom'] + ']')
+        a.grid(True)
         self.canvas.draw()
 
 
