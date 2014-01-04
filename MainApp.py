@@ -38,6 +38,7 @@ class LayerList:
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.panel = panel.viewPanel
+        self.parent = panel
 
         self.list = wx.ListCtrl(self.panel, -1, style=wx.LC_REPORT, size=(140, -1))
         self.list.InsertColumn(0, 'Layers', width=140)
@@ -55,6 +56,10 @@ class LayerList:
         self.toolbar = Toolbar(self.canvas) #matplotlib toolbar
         self.toolbar.Realize()
 
+        # Note that event is a MplEvent
+        self.canvas.mpl_connect('motion_notify_event', self.UpdateStatusBar)
+        self.canvas.Bind(wx.EVT_ENTER_WINDOW, self.ChangeCursor)
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         # This way of adding to sizer allows resizing
         sizer.Add(self.canvas, 1, wx.LEFT|wx.TOP|wx.GROW)
@@ -68,6 +73,16 @@ class LayerList:
         hbox.Layout()
         self.panel.Layout()
         self.panel.GetParent().Layout()
+
+    def ChangeCursor(self, event):
+        self.canvas.SetCursor(wx.StockCursor(wx.CURSOR_BULLSEYE))
+
+    def UpdateStatusBar(self, event):
+        if event.inaxes:
+            x, y = event.xdata, event.ydata
+            self.parent.SetStatusText(( "x= " + str(x) +
+                                           "  y=" +str(y) ),
+                                           0)
 
     def OnClick(self, event):
         i = event.GetData()
