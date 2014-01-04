@@ -79,6 +79,13 @@ class LayerList:
         a.set_ylabel('Events')
         a.set_title('Layer : ' + str(l['layer']) + '[' + l['atom'] + ']')
         a.grid(True)
+
+        textstr = 'Events=%.2f\navg=%.2f\nsigma=%.2f' % (len(l['energy']), l['avg'], l['sigma'])
+        props = dict(boxstyle='round4', facecolor='wheat', alpha=0.5)
+        x, xx, y = a.get_xlim()[0], a.get_xlim()[1] - a.get_xlim()[0], a.get_ylim()[1]
+        a.text(x + xx/100, y - y/100, textstr,
+               fontsize=14, verticalalignment='top', bbox=props)
+
         self.canvas.draw()
 
 
