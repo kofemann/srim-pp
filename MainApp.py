@@ -10,7 +10,9 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as Canvas
 from matplotlib.backends.backend_wxagg import NavigationToolbar2Wx as Toolbar
 from matplotlib.figure import Figure
 from srim import process
-import os, sys
+import os
+import sys
+import cStringIO
 
 
 class PlotPanel(wx.Panel):
@@ -51,9 +53,10 @@ class LayerList:
 
         self.panel.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnClick, self.list)
 
+        self.text = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE)
         self.fig = Figure()
         self.canvas = Canvas(self.panel, -1, self.fig)
-        self.toolbar = Toolbar(self.canvas) #matplotlib toolbar
+        self.toolbar = Toolbar(self.canvas)
         self.toolbar.Realize()
 
         # Note that event is a MplEvent
@@ -62,9 +65,10 @@ class LayerList:
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         # This way of adding to sizer allows resizing
-        sizer.Add(self.canvas, 1, wx.LEFT|wx.TOP|wx.GROW)
+        sizer.Add(self.canvas, 0, wx.LEFT|wx.TOP|wx.GROW)
         # Best to allow the toolbar to resize!
         sizer.Add(self.toolbar, 0, wx.GROW)
+        sizer.Add(self.text, 1, wx.EXPAND)
 
         hbox.Add(self.list, 0, wx.EXPAND)
         hbox.Add(sizer, 1, wx.EXPAND)
@@ -99,6 +103,11 @@ class LayerList:
         a.text(x + xx/100, y - y/100, textstr,
                fontsize=14, verticalalignment='top', bbox=props)
 
+        output = cStringIO.StringIO()
+        p = zip(n, bins)
+        for i in p:
+            output.write("%.4f\t%.2f\n" % (i[1], i[0]))
+        self.text.SetValue(output.getvalue())
         self.canvas.draw()
 
 
