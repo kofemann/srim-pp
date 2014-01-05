@@ -80,9 +80,7 @@ class LayerList:
     def UpdateStatusBar(self, event):
         if event.inaxes:
             x, y = event.xdata, event.ydata
-            self.parent.SetStatusText(( "x= " + str(x) +
-                                           "  y=" +str(y) ),
-                                           0)
+            self.parent.SetStatusText(("x=%.3f y=%.3f" % (x, y)), 0)
 
     def OnClick(self, event):
         i = event.GetData()
