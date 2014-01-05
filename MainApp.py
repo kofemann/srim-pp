@@ -53,7 +53,7 @@ class LayerList:
 
         self.panel.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnClick, self.list)
 
-        self.text = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE)
+        self.text = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
         self.fig = Figure()
         self.canvas = Canvas(self.panel, -1, self.fig)
         self.toolbar = Toolbar(self.canvas)
@@ -91,7 +91,7 @@ class LayerList:
         l = self.data[i]
         self.fig.clf()
         a = self.fig.add_subplot(111)
-        n, bins, patches = a.hist(l['energy'], 50, normed=1, alpha=0.75)
+        n, bins, patches = a.hist(l['energy'], 50, normed=0, alpha=0.75)
         a.set_xlabel('Energy, Mev')
         a.set_ylabel('Events')
         a.set_title('Layer : ' + str(l['layer']) + '[' + l['atom'] + ']')
