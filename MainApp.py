@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Used to guarantee to use at least Wx2.8
 import wxversion
 
