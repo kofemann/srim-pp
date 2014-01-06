@@ -108,7 +108,7 @@ class LayerList:
         output = cStringIO.StringIO()
         p = zip(n, bins)
         for i in p:
-            output.write("%.4f\t%.2f\n" % (i[1], i[0]))
+            output.write("%.4f\t\t%d\n" % (i[1], int(i[0])))
         self.text.SetValue(output.getvalue())
         self.canvas.draw()
 
