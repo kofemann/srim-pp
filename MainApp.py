@@ -53,7 +53,7 @@ class LayerList:
             index = self.list.InsertStringItem(sys.maxint, 'Layer-%d (%s)' % (l['layer'], l['atom']))
             self.list.SetItemData(index, i)
 
-        self.panel.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnClick, self.list)
+        self.panel.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnClick, self.list)
 
         self.text = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
         self.fig = Figure()
