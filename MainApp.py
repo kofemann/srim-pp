@@ -1,20 +1,15 @@
 #!/usr/bin/env python
 
-# Used to guarantee to use at least Wx2.8
-import wxversion
-
-wxversion.ensureMinimal('2.8')
-
 import wx
 import wx.aui
 import matplotlib as mpl
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as Canvas
-from matplotlib.backends.backend_wxagg import NavigationToolbar2Wx as Toolbar
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as Toolbar
 from matplotlib.figure import Figure
 from srim import process
 import os
 import sys
-import cStringIO
+import io
 
 
 class PlotPanel(wx.Panel):
@@ -50,7 +45,7 @@ class LayerList:
 
         for i in range(len(self.data)):
             l = self.data[i]
-            index = self.list.InsertStringItem(sys.maxint, 'Layer-%d (%s)' % (l['layer'], l['atom']))
+            index = self.list.InsertItem(sys.maxsize, 'Layer-%d (%s)' % (l['layer'], l['atom']))
             self.list.SetItemData(index, i)
 
         self.panel.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnClick, self.list)
@@ -81,19 +76,20 @@ class LayerList:
         self.panel.GetParent().Layout()
 
     def ChangeCursor(self, event):
-        self.canvas.SetCursor(wx.StockCursor(wx.CURSOR_BULLSEYE))
+        self.canvas.SetCursor(wx.Cursor(wx.CURSOR_BULLSEYE))
+        event.Skip()
 
     def UpdateStatusBar(self, event):
         if event.inaxes:
             x, y = event.xdata, event.ydata
-            self.parent.SetStatusText(("x=%.3f y=%.3f" % (x, y)), 0)
+            self.parent.SetStatusText(("energy = %.3f, event count = %.3f" % (x, y)), 0)
 
     def OnClick(self, event):
         i = event.GetData()
         l = self.data[i]
         self.fig.clf()
         a = self.fig.add_subplot(111)
-        n, bins, patches = a.hist(l['energy'], 50, normed=0, alpha=0.75)
+        n, bins, patches = a.hist(l['energy'], 50, density=0, alpha=0.75)
         a.set_xlabel('Energy, Mev')
         a.set_ylabel('Events')
         a.set_title('Layer : ' + str(l['layer']) + '[' + l['atom'] + ']')
@@ -105,7 +101,7 @@ class LayerList:
         a.text(x + xx/100, y - y/100, textstr,
                fontsize=14, verticalalignment='top', bbox=props)
 
-        output = cStringIO.StringIO()
+        output = io.StringIO()
         p = zip(n, bins)
         for i in p:
             output.write("%.4f\t\t%d\n" % (i[1], int(i[0])))
@@ -154,22 +150,20 @@ class MainFrame(wx.Frame):
     def OnOpen(self, e):
         """ Open a file"""
         self.dirname = ''
-        dlg = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.*", wx.OPEN)
+        dlg = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.*", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if dlg.ShowModal() == wx.ID_OK:
-            self.filename = dlg.GetFilename()
-            self.dirname = dlg.GetDirectory()
-            fname = os.path.join(self.dirname, self.filename)
-            self.SetStatusText('Processing: %s' % fname)
+            self.path = dlg.GetPath()
+            self.SetStatusText('Processing: %s' % self.path)
             wx.BeginBusyCursor()
-            wx.Yield()
-            self.data = process(fname)
+            wx.SafeYield()
+            self.data = process(self.path)
             wx.EndBusyCursor()
             self.SetStatusText('Done. %d records read' % len(self.data))
             self.layersPanel = LayerList(self)
         dlg.Destroy()
 
 def main():
-    app = wx.PySimpleApp()
+    app = wx.App()
     frame = MainFrame(None, 'SRIM postprocessing')
     frame.Show()
     app.MainLoop()

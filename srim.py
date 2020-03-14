@@ -2,7 +2,6 @@
 
 import re
 import string
-import cStringIO
 
 from numpy import *
 import matplotlib.pyplot as plt
@@ -24,12 +23,12 @@ def get_data_lines(raw_line):
 
 def dump_in_hex(s):
     for c in s:
-        print "%02x" % ord(c)
+        print ("%02x" % ord(c))
 
 
 def line_to_record(data_line):
     data_line = data_line.replace(DELIMER2, DELIMER)
-    rf = string.split(data_line, DELIMER)
+    rf = data_line.split(DELIMER)
     record = {}
     record['ion'] = rf[1]
     record['energy'] = float(rf[2]) / KeV_in_Mev
@@ -37,7 +36,7 @@ def line_to_record(data_line):
     record['y'] = float(rf[4])
     record['z'] = float(rf[5])
     record['se'] = float(rf[6])
-    record['atom'] = string.strip(rf[7])
+    record['atom'] = rf[7].strip()
     record['recoil_energy'] = float(rf[8])
     record['target_disp'] = float(rf[9])
 
@@ -45,14 +44,26 @@ def line_to_record(data_line):
 
 
 def read_records(data_file):
-    f = open(data_file)
-    data_lines_only = filter(get_data_lines, f.readlines())
-    records = map(line_to_record, data_lines_only)
+    with open(data_file) as f:
+        data_lines_only = filter(get_data_lines, f.readlines())
+        records = map(line_to_record, data_lines_only)
 
-    f.close()
+        return sorted(records, key=lambda record: record['depth'])
 
-    return sorted(records, key=lambda record: record['depth'])
-
+def update_energy(e):
+    (l, r) = e
+    r['layer'] = l
+    energies = array(r['energy'])
+    avg = energies.mean()
+    emin = min(r['energy'])
+    var = average((energies - avg) ** 2)
+    sigma = energies.std()
+    err = math.sqrt(var) / math.sqrt(len(r['energy']))
+    r['sigma'] = sigma
+    r['avg'] = avg
+    r['err'] = err
+    r['count'] = len(r['energy'])
+    return r
 
 def process(filename):
 
@@ -82,25 +93,10 @@ def process(filename):
         run_info['energy'].append(r['energy'])
 
     final_lavels = filter(lambda record: record['depth1'] - record['depth0'] != 0, levels)
-
-    final_layer = 0
-    for l in final_lavels:
-        final_layer += 1
-
-        l['layer'] = final_layer
-        energies = array(l['energy'])
-        avg = energies.mean()
-        emin = min(l['energy'])
-        var = average((energies - avg) ** 2)
-        sigma = energies.std()
-        err = math.sqrt(var) / math.sqrt(len(l['energy']))
-        l['sigma'] = sigma
-        l['avg'] = avg
-        l['err'] = err
-        l['count'] = len(l['energy'])
+    final_lavels = map(update_energy, enumerate(final_lavels))
 
     return sorted(final_lavels, key = lambda record: record['layer'])
 
 if __name__ == "__main__":
     for R in process(IN):
-        print R['layer'], R['atom'], R['count']
+        print (R['layer'], R['atom'], R['count'])
