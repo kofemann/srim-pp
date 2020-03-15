@@ -6,7 +6,6 @@ import string
 from numpy import *
 import matplotlib.pyplot as plt
 
-
 IN = 'COLLISON.txt'
 OUT = 'result.txt'
 DELIMER = '\xb3'
@@ -16,15 +15,8 @@ KeV_in_Mev = 1000
 data_line_re = re.compile(".+\d+\.E\+0.*")
 dead_line_re = re.compile(".*(Target|Replacements).*")
 
-
 def get_data_lines(raw_line):
     return data_line_re.match(raw_line) and not dead_line_re.match(raw_line)
-
-
-def dump_in_hex(s):
-    for c in s:
-        print ("%02x" % ord(c))
-
 
 def line_to_record(data_line):
     data_line = data_line.replace(DELIMER2, DELIMER)
