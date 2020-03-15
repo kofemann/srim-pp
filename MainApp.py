@@ -107,6 +107,7 @@ class LayerList:
             output.write("%.4f\t\t%d\n" % (i[1], int(i[0])))
         self.text.SetValue(output.getvalue())
         self.canvas.draw()
+        self.canvas.Refresh()
 
 
 class MainFrame(wx.Frame):
