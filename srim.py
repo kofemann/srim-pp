@@ -8,8 +8,9 @@ import matplotlib.pyplot as plt
 
 IN = 'COLLISON.txt'
 OUT = 'result.txt'
-DELIMER = '\xb3'
-DELIMER2 = '\x3f'
+DELIMER = '<#>'
+UNICODE_DEAD_SYMBOL = '\ufffd'
+ASCII_DEAD_SYMBOL = '?'
 KeV_in_Mev = 1000
 
 data_line_re = re.compile(".+\d+\.E\+0.*")
@@ -19,8 +20,10 @@ def get_data_lines(raw_line):
     return data_line_re.match(raw_line) and not dead_line_re.match(raw_line)
 
 def line_to_record(data_line):
-    data_line = data_line.replace(DELIMER2, DELIMER)
+
+    data_line = data_line.replace(UNICODE_DEAD_SYMBOL, DELIMER).replace(ASCII_DEAD_SYMBOL, DELIMER)
     rf = data_line.split(DELIMER)
+
     record = {}
     record['ion'] = rf[1]
     record['energy'] = float(rf[2]) / KeV_in_Mev
@@ -34,9 +37,8 @@ def line_to_record(data_line):
 
     return record
 
-
 def read_records(data_file):
-    with open(data_file) as f:
+    with open(data_file, mode = 'r', encoding="utf-8", errors="replace") as f:
         data_lines_only = filter(get_data_lines, f.readlines())
         records = map(line_to_record, data_lines_only)
 
