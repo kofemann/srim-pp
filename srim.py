@@ -2,6 +2,7 @@
 
 import re
 import string
+import sys
 
 from numpy import *
 import matplotlib.pyplot as plt
@@ -92,5 +93,8 @@ def process(filename):
     return sorted(final_lavels, key = lambda record: record['layer'])
 
 if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        IN = sys.argv[1]
+
     for R in process(IN):
         print (R['layer'], R['atom'], R['count'])
