@@ -5,7 +5,6 @@ import string
 import sys
 
 from numpy import *
-import matplotlib.pyplot as plt
 
 IN = 'COLLISON.txt'
 OUT = 'result.txt'
